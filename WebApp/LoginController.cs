@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApp
@@ -34,8 +36,11 @@ namespace WebApp
                 var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+                return;
             }
             //TODO 2: return 404 if user not found
+            HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
+            await HttpContext.Response.WriteAsync("User not found.");
         }
     }
 }
