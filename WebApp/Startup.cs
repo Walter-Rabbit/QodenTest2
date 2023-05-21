@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ namespace WebApp
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
             services.AddMvc(opt => opt.EnableEndpointRouting = false);
             services.AddSingleton<IAccountDatabase, AccountDatabaseStub>();
             services.AddSingleton<IAccountCache, AccountCache>();
@@ -28,6 +30,7 @@ namespace WebApp
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseAuthentication();
             app.UseMvc();
             app.Run(async (context) => { await context.Response.WriteAsync("Hello World!"); });
         }
