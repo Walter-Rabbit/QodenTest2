@@ -21,6 +21,7 @@ namespace WebApp
             services.AddMvc(opt => opt.EnableEndpointRouting = false);
             services.AddSingleton<IAccountDatabase, AccountDatabaseStub>();
             services.AddSingleton<IAccountCache, AccountCache>();
+            services.AddScoped<IAccountService, AccountService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -32,6 +33,7 @@ namespace WebApp
             }
 
             app.UseAuthentication();
+            app.UseAuthorization();
             app.UseMvc();
             app.Run(async (context) => { await context.Response.WriteAsync("Hello World!"); });
         }
