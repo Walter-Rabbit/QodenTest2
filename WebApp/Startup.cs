@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using System.Net;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -17,11 +21,31 @@ namespace WebApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(opt => opt.Cookie.Name = "AuthCookie");
+                .AddCookie(opt =>
+                {
+                    opt.Cookie.Name = "AuthCookie";
+                    opt.Events.OnRedirectToLogin = context =>
+                    {
+                        context.Response.StatusCode = 401;
+                        return Task.CompletedTask;
+                    };
+                    opt.Events.OnRedirectToAccessDenied = context =>
+                    {
+                        context.Response.StatusCode = 403;
+                        return Task.CompletedTask;
+                    };
+                });
+            services.AddAuthorization(opt =>
+            {
+                opt.AddPolicy("Admin", policy => { policy.Requirements.Add(new RoleRequirement("Admin")); });
+                opt.InvokeHandlersAfterFailure = false;
+            });
+
             services.AddMvc(opt => opt.EnableEndpointRouting = false);
+            services.AddSingleton<IAuthorizationHandler, RoleHandler>();
             services.AddSingleton<IAccountDatabase, AccountDatabaseStub>();
             services.AddSingleton<IAccountCache, AccountCache>();
-            services.AddScoped<IAccountService, AccountService>();
+            services.AddSingleton<IAccountService, AccountService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -31,9 +55,10 @@ namespace WebApp
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            
             app.UseAuthentication();
             app.UseAuthorization();
+
             app.UseMvc();
             app.Run(async (context) => { await context.Response.WriteAsync("Hello World!"); });
         }

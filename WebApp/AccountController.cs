@@ -1,13 +1,12 @@
 ﻿using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApp
 {
     // TODO 4: unauthorized users should receive 401 status code
+    [Authorize]
     [Route("api/account")]
     public class AccountController : Controller
     {
@@ -17,24 +16,22 @@ namespace WebApp
         {
             _accountService = accountService;
         }
-
-        [Authorize] 
+        
         [HttpGet]
         public ValueTask<Account> Get()
         {
-            var externalId = HttpContext.User.Claims.First(c => c.Type == "ExternalId").Value;
+            var externalId = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "ExternalId")?.Value;
             return _accountService.LoadOrCreateAsync(externalId /* TODO 3: Get user id from cookie */);
         }
 
         //TODO 5: Endpoint should works only for users with "Admin" Role
-        [Authorize]
+        [Authorize(Policy = "Admin")]
         [HttpGet("{id}")]
         public Account GetByInternalId([FromRoute] int id)
         {
             return _accountService.GetFromCache(id);
         }
-
-        [Authorize]
+        
         [HttpPost("counter")]
         public async Task UpdateAccount()
         {

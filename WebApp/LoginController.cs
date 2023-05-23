@@ -38,6 +38,7 @@ namespace WebApp
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
                 return;
             }
+
             //TODO 2: return 404 if user not found
             HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
             await HttpContext.Response.WriteAsync("User not found.");
