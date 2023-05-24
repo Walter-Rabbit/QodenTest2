@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 
 namespace WebApp
 {
@@ -23,7 +24,7 @@ namespace WebApp
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(opt =>
                 {
-                    opt.Cookie.Name = "AuthCookie";
+                    opt.Cookie.Name = HeaderNames.Cookie;
                     opt.Events.OnRedirectToLogin = context =>
                     {
                         context.Response.StatusCode = 401;
@@ -55,7 +56,7 @@ namespace WebApp
             {
                 app.UseDeveloperExceptionPage();
             }
-            
+
             app.UseAuthentication();
             app.UseAuthorization();
 

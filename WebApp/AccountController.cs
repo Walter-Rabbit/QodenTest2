@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +22,10 @@ namespace WebApp
         public ValueTask<Account> Get()
         {
             var externalId = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "ExternalId")?.Value;
+            if (externalId is null)
+            {
+                throw new Exception("Non-existent id got from cookie.");
+            }
             return _accountService.LoadOrCreateAsync(externalId /* TODO 3: Get user id from cookie */);
         }
 
@@ -38,6 +43,8 @@ namespace WebApp
             //Update account in cache, don't bother saving to DB, this is not an objective of this task.
             var account = await Get();
             account.Counter++;
+            
+            _accountService.AddOrUpdateInCache(account);
         }
     }
 }
