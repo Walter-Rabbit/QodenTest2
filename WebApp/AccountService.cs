@@ -44,5 +44,10 @@ namespace WebApp
 
             return account;
         }
+
+        public void AddOrUpdateInCache(Account account)
+        {
+            _cache.AddOrUpdate(account);
+        }
     }
 }
